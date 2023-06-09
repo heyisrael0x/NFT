@@ -1,0 +1,9 @@
+{
+  "name": "suko",
+  "description": "An adorable PUG pop",
+  "image": "http://127.0.0.1:5500/suck.png",
+  "attributes": {
+    "trait_type": "braveness",
+    "value": 100
+  }
+}

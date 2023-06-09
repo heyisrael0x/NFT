@@ -1,0 +1,9 @@
+{
+  "name": "PUG",
+  "description": "An adorable PUG pop",
+  "image": "https://ipfs.io/ipfs/ipfs://bafybeig37ioir76s7mg5oobetncojcm3c3hxasyd4rvid4jqhy4gkaheg4/?filename=0-PUG.json",
+  "attributes": {
+    "trait_type": "cuteness",
+    "value": 100
+  }
+}
