@@ -7,30 +7,21 @@ const networkConfig = {
       "0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c",
     subscriptionId: "0",
     callbackGasLimit: "500000",
-    leastEthToSend: ethers.utils.parseEther("0.01"),
-    randomNumberRange: "10",
-    numberOfTrials: "3",
-    value: ethers.utils.parseEther("5"),
+    mintFee: ethers.utils.parseEther("0.01"),
   },
   31337: {
     name: "hardhat",
     gasLane:
       "0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c",
     callbackGasLimit: "500000",
-    leastEthToSend: ethers.utils.parseEther("0.1"),
-    randomNumberRange: "10",
-    numberOfTrials: "3",
-    value: ethers.utils.parseEther("5"),
+    mintFee: ethers.utils.parseEther("0.1"),
   },
   1337: {
     name: "ganache",
     gasLane:
       "0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c",
     callbackGasLimit: "500000",
-    leastEthToSend: ethers.utils.parseEther("0.1"),
-    randomNumberRange: "10",
-    numberOfTrials: "3",
-    value: ethers.utils.parseEther("5"),
+    mintFee: ethers.utils.parseEther("0.1"),
   },
 };
 const developmentChains = ["localhost", "hardhat", "ganache"];
