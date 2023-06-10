@@ -24,3 +24,5 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
     log("On a develpoment-chain not verifing");
   }
 };
+
+module.exports.tags = ["all", "basicNft", "main"];
