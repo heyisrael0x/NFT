@@ -3,17 +3,31 @@ const {
   developmentChains,
   networkConfig,
 } = require("../helper-hardhat-config");
-const { storeImages } = require("../utils/uploadToPinata");
+const {
+  storeImages,
+  storeTokenUriMetadata,
+} = require("../utils/uploadToPinata");
 require("dotenv").config();
 
 const imagesLocation = "./images/randomIpfsNft";
+
+const metadataTemplate = {
+  name: "",
+  description: "",
+  image: "",
+  attributes: {
+    trait_type: "Braveness",
+    value: 100,
+  },
+};
+
 const VRF_SUB_FUND_AMOUNT = ethers.utils.parseEther("30");
 module.exports = async function ({ getNamedAccounts, deployments }) {
   const { deploy, log } = deployments;
   const { deployer } = await getNamedAccounts();
   const chainId = network.config.chainId;
 
-  let tokenUris;
+  let tokenUris = [];
 
   if (process.env.UPLOAD_TO_PINATA) {
     tokenUris = await handleTokenUris();
@@ -41,8 +55,6 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
   const callbackGasLimit = networkConfig[chainId]["callbackGasLimit"];
   const mintFee = networkConfig[chainId]["mintFee"];
 
-  await storeImages(imagesLocation);
-
   const args = [
     vrfCoordinatorV2Address,
     subscriptionId,
@@ -52,19 +64,51 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
     mintFee,
   ];
 
-  //   const randomipfsNft = await deploy("RandomIpfsNft", {
-  //     from: deployer,
-  //     log: true,
-  //     args: args,
-  //     waitConfirmations: network.config.blockConfirmations,
-  //   });
+  const randomipfsNft = await deploy("RandomIpfsNft", {
+    from: deployer,
+    log: true,
+    args: args,
+    waitConfirmations: network.config.blockConfirmations || 1,
+  });
+  log("randomipfsNft is", randomipfsNft.address);
+
+  if (
+    !developmentChains.includes(network.name) &&
+    process.env.ETHERSCAN_API_KEY
+  ) {
+    log("verify.....");
+    await verify(basicNft.address, args);
+    log("--------------------------");
+  } else {
+    log("On a develpoment-chain not verifing");
+  }
 };
 
 async function handleTokenUris() {
   tokenUris = [];
   // Store the image in ipfs
   // Store metadata to ipfs
+  const { responses: imageUploadResponses, files } = await storeImages(
+    imagesLocation
+  );
+  for (imageUploadResponseIndex in imageUploadResponses) {
+    // Create Metadata
+    // Upload Metadata
+    let tokenUriMetadata = { ...metadataTemplate };
+    tokenUriMetadata.name = files[imageUploadResponseIndex].replace(".jpg", "");
+    tokenUriMetadata.description = `A brave ${tokenUriMetadata.name}`;
+    tokenUriMetadata.image = `ipfs://${imageUploadResponses[imageUploadResponseIndex].ipfsHash}`;
+    console.log(`Uploading ${tokenUriMetadata.name}..`);
 
+    // Store the json to pinata/ IPFS
+    const metadataUploadResponse = await storeTokenUriMetadata(
+      tokenUriMetadata
+    );
+    tokenUris.push(`ipfs://${metadataUploadResponse.ipfsHash}`);
+  }
+  console.log("Token URIS uploaded!, They are:");
+  console.log(tokenUris);
   return tokenUris;
 }
+
 module.exports.tags = ["all", "randomipfs", "main"];
