@@ -8,6 +8,7 @@ const networkConfig = {
     subscriptionId: "0",
     callbackGasLimit: "500000",
     mintFee: ethers.utils.parseEther("0.01"),
+    ethUsdPriceFeedAddress: "0x694AA1769357215DE4FAC081bf1f309aDC325306", //"PricefeedAddressForSepoliaGoesHere"
   },
   31337: {
     name: "hardhat",
@@ -27,10 +28,13 @@ const networkConfig = {
 const developmentChains = ["localhost", "hardhat", "ganache"];
 const FRONT_END_ADDRESSES_FILE = "../Client/src/utils/address.json";
 const FRONT_END_ABI_FILE = "../Client/src/utils/abi.json";
-
+const DECIMALS = 8;
+const INITIAL_ANSWER = 200000000000;
 module.exports = {
   networkConfig,
   developmentChains,
   FRONT_END_ADDRESSES_FILE,
   FRONT_END_ABI_FILE,
+  DECIMALS,
+  INITIAL_ANSWER,
 };
