@@ -3,6 +3,7 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "./library/base64.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 contract DynamicSvgNft is ERC721 {
     uint256 private s_tokenCounter;
@@ -10,14 +11,21 @@ contract DynamicSvgNft is ERC721 {
     string private i_highImageURI;
     string private constant base64EncodedSvgPrefix =
         "data:image/svg+xml;base64";
+    AggregatorV3Interface internal immutable i_priceFeed;
+
+    mapping(uint256 => int256) public s_tokenIdToHighValue;
+
+    event createdNFT(uint256 indexed tokenId, int256 highValue);
 
     constructor(
+        address priceFeedAddress,
         string memory lowSvg,
         string memory highSvg
     ) ERC721("Dynamic SVG NFT", "DSN") {
         s_tokenCounter = 0;
-        // i_lowImageURI = lowSvg;
-        // i_highImageURI = highSvg;
+        i_lowImageURI = svgToImageURI(lowSvg);
+        i_highImageURI = svgToImageURI(highSvg);
+        i_priceFeed = AggregatorV3Interface(priceFeedAddress);
     }
 
     function svgToImageURI(
@@ -30,10 +38,13 @@ contract DynamicSvgNft is ERC721 {
             string(abi.encodePacked(base64EncodedSvgPrefix, svgBase64Encoded));
     }
 
-    function mintNft() public {
+    function mintNft(int256 highValue) public {
         uint256 tokenId = s_tokenCounter;
+        s_tokenIdToHighValue[tokenId] = highValue;
         s_tokenCounter += 1;
         _safeMint(msg.sender, tokenId);
+
+        emit createdNFT(tokenId, highValue);
     }
 
     function _baseURI() internal pure override returns (string memory) {
@@ -47,10 +58,16 @@ contract DynamicSvgNft is ERC721 {
             _exists(tokenId),
             "ERC721Metadata: URI query for nonexistent token"
         );
-        string memory imageURI = "hi";
 
         // "data:image/svg+xml;base64";
         // "data:application/json;base64";
+
+        (, int256 price, , , ) = i_priceFeed.latestRoundData();
+        string memory imageURI = i_lowImageURI;
+        if (price >= s_tokenIdToHighValue[tokenId]) {
+            imageURI = i_highImageURI;
+        }
+
         return
             string(
                 abi.encodePacked(
